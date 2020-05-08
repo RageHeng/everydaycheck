@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>人数统计</title>
+        <script src="./js/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+        <link rel="stylesheet" href="./css/bootstrap.min.css" >
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+            function updatecheck(){
+                $.ajax({
+                        url:'http://121.36.19.47/sample/echoinfo.php',
+                        type:'get',
+                        success:function(data){
+                            $("#p1").text(data);
+                        }
+                    })
+            }
+
+            function getdate(){
+                var date = new Date();
+                $("#span1").text(date.toLocaleDateString())
+            }
+
+            window.onload = function () {
+                updatecheck();
+                getdate();
+            }
+
+            $(document).ready(function(){
+                $("#btn1").click(function() {
+                    //console.log("click触发");
+                    if($("#input1").val() == '' || $("#input2").val() == '') {
+                        alert("请把信息(姓名或学号)补充完整");
+                    }else{
+                        if(!($("#1").prop('checked'))){
+                            alert("请勾选我已完成信息上报");
+                        }else{
+                            $("#btn1").text("确认中，请稍等...");
+                            $.ajax({
+                                url:'http://121.36.19.47/sample/index.php',
+                                type:'get',
+                                data:{
+                                    name:$("#input1").val(),
+                                    id:$("#input2").val(),
+                                },
+                                success: function(data){
+                                    alert(data);
+                                    updatecheck();
+                                    $("#btn1").text("Done！");
+                                },
+                                error:function(){
+                                    $("#btn1").text("出现一些未知问题，请稍后重试");
+                                }
+                            })
+                        }
+                    }
+                })
+                //clearall按钮
+                $("#btn2").click(function(){
+                    $.ajax({
+                        url:'http://121.36.19.47/sample/clearall.php',
+                        type:'get',
+                    })
+                    updatecheck();
+                })
+            })
+            
+        </script>
+
+        <style type="text/css">
+            #div1>div{
+                
+                margin-left: 20%;
+                margin-right: 20%;
+                margin-top: 8px;
+            }
+            @media all and (orientation : portrait) {
+                #div1>div{
+                    margin-left: 3%;
+                    margin-right: 3%;
+                }
+        
+            }
+        </style>
+
+        <div id = "div1">
+            <div class="input-group">
+                <span class="input-group-addon" id="basic-addon1">姓名</span>
+                <input type="text" class="form-control" placeholder="请输入你的名字" aria-describedby="basic-addon1" id = "input1">
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-addon" id="basic-addon1">学号</span>
+                <input type="text" class="form-control" placeholder="请输入学号后两位" aria-describedby="basic-addon1" id = "input2">
+            </div>
+
+            <div>
+                <input type="checkbox" name="isfine" id="1">
+                <label for="1">我确认我已经完成<span id="span1"></span>信息上报</label>
+            </div>
+            <div>
+                <button  id= "btn1" type="button" class="btn btn-default" >确认提交</button>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">未完成名单</div>
+                <div class="panel-body">
+                <p id = "p1"></p>
+                </div>
+            </div>
+
+            <div>
+                <button  id= "btn2" type="button" class="btn btn-default" >clearall</button>
+                <p>这个按钮仅在sample内存在，用于测试，正常情况下是每天12点自动执行</p>
+            </div>
+
+        </div>
+    </body>
+
+</html>
