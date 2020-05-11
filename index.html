@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>人数统计</title>
-        <script src="./js/jquery.min.js"></script>
+        <script src="./js/jquery.js"></script>
         <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
         <link rel="stylesheet" href="./css/bootstrap.min.css" >
         
@@ -15,31 +15,81 @@
                         url:'http://121.36.19.47/sample/echoinfo.php',
                         type:'get',
                         success:function(data){
-                            $("#p1").text(data);
+                            if(data == ''){
+                                $("#p1").text("全部完成");
+
+                            }else{
+                                $("#p1").text(data);
+                            }
+                        },
+                        error:function(errorinfo){
+                            $("#p1").text("获取未完成名单时发生错误"+errorinfo.statusText);
                         }
-                    })
+                })
             }
 
             function getdate(){
                 var date = new Date();
-                $("#span1").text(date.toLocaleDateString())
+                $("#span1").text(date.toLocaleDateString());
+            }
+
+            function gethitokoto(){
+                $.ajax({
+                    url:'https://v1.hitokoto.cn',
+                    type:'get',
+                    data:{
+                        c:'d',
+                        encode:'json',
+                        charset:'utf-8',
+                    },
+                    success:function(data){
+                        if(data.type == 'e'){
+                            $("#p2").html(data.hitokoto);
+                        }else{
+                            if(data.from_who == null){
+                                $("#p2 ").html(data.hitokoto+'—— '+'《'+data.from+'》');
+                            }else{
+                                $("#p2").html(data.hitokoto+'—— '+'《'+data.from+'》'+' '+data.from_who);
+                            }
+                        }
+                    },
+                    error:function(errorinfo){
+                        $("#div2").css("display","none");
+                    }
+                })
+            }
+
+            function outputinfo(info,status){
+                $("#div3").css("display","inherit");
+                $("#div3").removeClass();
+                $("#div3").addClass('alert alert-'+status);
+                $("#div3").text(info);
             }
 
             window.onload = function () {
                 updatecheck();
                 getdate();
+                gethitokoto();
             }
 
             $(document).ready(function(){
                 $("#btn1").click(function() {
                     //console.log("click触发");
+                    var info;
+                    var status;
                     if($("#input1").val() == '' || $("#input2").val() == '') {
-                        alert("请把信息(姓名或学号)补充完整");
+                        info = "请把信息(姓名或学号)补充完整";
+                        status = "warning";
+                        outputinfo(info,status);
                     }else{
                         if(!($("#1").prop('checked'))){
-                            alert("请勾选我已完成信息上报");
+                            info = "请勾选我已完成信息上报";
+                            status = "warning";
+                            outputinfo(info,status);
                         }else{
-                            $("#btn1").text("确认中，请稍等...");
+                            info = "确认中，请稍后....";
+                            status = "info";
+                            outputinfo(info,status);
                             $.ajax({
                                 url:'http://121.36.19.47/sample/index.php',
                                 type:'get',
@@ -48,24 +98,19 @@
                                     id:$("#input2").val(),
                                 },
                                 success: function(data){
-                                    alert(data);
                                     updatecheck();
-                                    $("#btn1").text("Done！");
+                                    info = data;
+                                    status = "success";
+                                    outputinfo(info,status);
                                 },
                                 error:function(){
-                                    $("#btn1").text("出现一些未知问题，请稍后重试");
+                                    info = "出现一些未知问题，请稍后重试";
+                                    status = "warning";
+                                    outputinfo(info,warning);
                                 }
                             })
                         }
                     }
-                })
-                //clearall按钮
-                $("#btn2").click(function(){
-                    $.ajax({
-                        url:'http://121.36.19.47/sample/clearall.php',
-                        type:'get',
-                    })
-                    updatecheck();
                 })
             })
             
@@ -73,7 +118,6 @@
 
         <style type="text/css">
             #div1>div{
-                
                 margin-left: 20%;
                 margin-right: 20%;
                 margin-top: 8px;
@@ -88,6 +132,9 @@
         </style>
 
         <div id = "div1">
+
+            <div id = "div3" class="" role="alert" style="display: none;"></div>
+
             <div class="input-group">
                 <span class="input-group-addon" id="basic-addon1">姓名</span>
                 <input type="text" class="form-control" placeholder="请输入你的名字" aria-describedby="basic-addon1" id = "input1">
@@ -106,16 +153,15 @@
                 <button  id= "btn1" type="button" class="btn btn-default" >确认提交</button>
             </div>
             
-            <div class="panel panel-default">
+            <div class="panel panel-warning">
                 <div class="panel-heading">未完成名单</div>
                 <div class="panel-body">
                 <p id = "p1"></p>
                 </div>
             </div>
 
-            <div>
-                <button  id= "btn2" type="button" class="btn btn-default" >clearall</button>
-                <p>这个按钮仅在sample内存在，用于测试，正常情况下是每天12点自动执行</p>
+            <div class="alert alert-info" role="alert" id = "div2">
+                <p id = "p2"></p>
             </div>
 
         </div>
